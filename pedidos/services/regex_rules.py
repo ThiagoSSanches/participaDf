@@ -31,6 +31,18 @@ NAME_CONTEXT_PATTERNS = [
     r'\b(do\s+servidor|da\s+servidora|do\s+aluno|da\s+aluna)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+',
 ]
 
+NAME_PATTERNS = [
+    # Padrões formais
+    r'\b(nome|paciente|servidor|servidora|beneficiário|beneficiária|requerente|solicitante|cidadão|cidadã|aluno|aluna)\s*:?\s*([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){1,5}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+',
+    r'\b(Sr\.|Sra\.|Dr\.|Dra\.)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+',
+    r'\b(do\s+servidor|da\s+servidora|do\s+aluno|da\s+aluna)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+',
+    
+    # ← ADICIONAR NOVOS PADRÕES
+    r'\b(me\s+chamo|meu\s+nome\s+é|eu\s+sou|chamo-me)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+',
+    r'\bEu,?\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){2,5}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+,',  # "Eu, Pablo Souza Ramos,"
+    r'\b([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){2,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+,?\s+(portador|portadora|CPF|RG|matrícula)',  # "Pablo Souza Ramos, portador do CPF"
+]
+
 # Data de nascimento - contextos como "nascido em 01/01/1990"
 BIRTHDATE_REGEX = r'\b(nascid[oa]|data\s+de\s+nascimento|DN)\s*(em|:)?\s*\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b'
 
@@ -113,16 +125,6 @@ def validate_cpf(cpf_string):
 def detect_personal_data_regex(text):
     """
     Detecta dados pessoais usando apenas regex.
-    
-    Args:
-        text (str): Texto para análise
-        
-    Returns:
-        dict: {
-            'detected': bool,
-            'tipos_detectados': list,
-            'detalhes': dict
-        }
     """
     if not isinstance(text, str):
         return {'detected': False, 'tipos_detectados': [], 'detalhes': {}}
@@ -130,15 +132,14 @@ def detect_personal_data_regex(text):
     tipos_detectados = []
     detalhes = {}
     
-    # CPF - formatos: 123.456.789-00, 12345678900
+    # CPF
     cpf_match = re.search(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b', text, re.IGNORECASE)
     if cpf_match:
         tipos_detectados.append('CPF')
         detalhes['cpf'] = cpf_match.group()
     
-    # RG - formatos: 1234567, 12.345.678-9
+    # RG
     rg_match = re.search(r'\b([A-Z]{2}[-\s]?)?\d{1,2}\.?\d{3}\.?\d{3}[-\s]?[0-9Xx]?\b', text, re.IGNORECASE)
-    # Verificar se não é apenas um número de processo ou protocolo
     if rg_match and not re.search(r'(processo|protocolo|licitação|contrato)\s*n?[°º]?\s*\d', text, re.IGNORECASE):
         tipos_detectados.append('RG')
         detalhes['rg'] = rg_match.group()
@@ -149,7 +150,7 @@ def detect_personal_data_regex(text):
         tipos_detectados.append('Email')
         detalhes['email'] = email_match.group()
     
-    # Telefone - (61) 99999-9999, 61999999999
+    # Telefone
     telefone_match = re.search(r'\b(\+?55\s?)?(\(?\d{2}\)?\s?)?([9]\d{4}|\d{4})[-\s]?\d{4}\b', text)
     if telefone_match:
         tipos_detectados.append('Telefone')
@@ -175,11 +176,17 @@ def detect_personal_data_regex(text):
             detalhes['endereco'] = endereco_match.group()
             break
     
-    # Nome próprio contextualizado
+    # Nome próprio contextualizado - PADRÕES EXPANDIDOS
     nomes_contexto_patterns = [
+        # Padrões formais
         r'\b(nome|paciente|servidor|servidora|beneficiário|beneficiária|requerente|solicitante|cidadão|cidadã|aluno|aluna)\s*:?\s*([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){1,5}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+',
         r'\b(Sr\.|Sra\.|Dr\.|Dra\.)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+',
         r'\b(do\s+servidor|da\s+servidora|do\s+aluno|da\s+aluna)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+',
+        
+        # ← NOVOS PADRÕES
+        r'\b(me\s+chamo|meu\s+nome\s+é|eu\s+sou|chamo-me)\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){1,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+',
+        r'\bEu,?\s+([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){2,5}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+,',
+        r'\b([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+\s+){2,4}[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+,?\s+(portador|portadora|CPF|RG|matrícula)',
     ]
     for pattern in nomes_contexto_patterns:
         nome_match = re.search(pattern, text, re.IGNORECASE)
@@ -200,7 +207,7 @@ def detect_personal_data_regex(text):
         tipos_detectados.append('Prontuário')
         detalhes['prontuario'] = prontuario_match.group()
     
-    # Número SEI (processos administrativos)
+    # Número SEI
     sei_match = re.search(r'\b(processo\s+SEI|SEI)\s*n?[°º]?\s*:?\s*\d{5,6}[-/]\d{8}[-/]\d{4}[-/]?\d{2}\b', text, re.IGNORECASE)
     if sei_match:
         tipos_detectados.append('Processo SEI')
