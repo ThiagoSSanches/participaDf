@@ -382,21 +382,7 @@ P1 (F1-Score) = 2 × (Precisão × Sensibilidade) / (Precisão + Sensibilidade)
 2. Menor número de Falsos Positivos
 3. Maior nota P1
 
-### P2 - Documentação (10 pontos)
 
-| Critério | Pontos | Status |
-|----------|--------|--------|
-| 1a. Lista pré-requisitos | 1 | ✅ |
-| 1b. Arquivo requirements.txt | 2 | ✅ |
-| 1c. Comandos sequenciais | 1 | ✅ |
-| 2a. Comando exato de execução | 2 | ✅ |
-| 2b. Formato entrada/saída | 1 | ✅ |
-| 3a. README.md completo | 1 | ✅ |
-| 3b. Comentários no código | 1 | ✅ |
-| 3c. Estrutura organizada | 1 | ✅ |
-| **TOTAL** | **10** | ✅ |
-
----
 
 ## 6. Solução de Problemas
 
